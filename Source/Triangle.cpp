@@ -5,6 +5,7 @@
 //  Created by Clayton Anderson on 4/9/17.
 //  Copyright © 2017 Clayton Anderson. All rights reserved.
 //
+#define GLM_ENABLE_EXPERIMENTAL
 
 #include "Triangle.h"
 

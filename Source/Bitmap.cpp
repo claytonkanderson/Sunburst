@@ -36,8 +36,8 @@ bool Bitmap::SaveBMP(const char *filename) {
 	head.BitsPerPixel=32;
 
 	FILE *f=0;
-//	fopen_s(&f,filename,"wb");
-    f = fopen(filename, "wb");
+	fopen_s(&f,filename,"wb");
+    //f = fopen(filename, "wb");
 	if(f==0) {
 		printf("Can't open '%s'\n",filename);
 		return false;

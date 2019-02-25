@@ -46,7 +46,7 @@ public:
     void Render(Scene &scn);
     void RenderMultiThread(Scene &scn, int numThreads);
     static void ThreadFunc(Scene &scn, int minX, int maxX, int minY, int maxY);
-    void SaveBitmap(char * filename);
+    void SaveBitmap(const char * filename);
 private:
     static int XRes,YRes;
     static mat4 WorldMatrix;

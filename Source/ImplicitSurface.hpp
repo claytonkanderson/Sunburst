@@ -13,14 +13,14 @@
 #include <glm/mat4x4.hpp>
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
-#include <boost/math/tools/roots.hpp>
+//#include <boost/math/tools/roots.hpp>
 #include <vector>
 #include <algorithm>
-#include "glm/gtc/random.hpp"
+#include <glm/gtc/random.hpp>
 #define SHOWVEC(v) std::cout << #v << ": " << v.x << " " << v.y << " " << v.z << std::endl
 
 using namespace glm;
-using namespace boost::math::tools;
+//using namespace boost::math::tools;
 
 class ImplicitSurface:public Object
 {

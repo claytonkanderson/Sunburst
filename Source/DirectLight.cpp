@@ -6,6 +6,8 @@
 //  Copyright © 2017 Clayton Anderson. All rights reserved.
 //
 
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include "DirectLight.h"
 
 DirectLight::DirectLight()

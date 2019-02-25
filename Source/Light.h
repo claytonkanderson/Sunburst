@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Color.h"
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 #include <glm/gtx/norm.hpp>
 #include <iostream>
 #define SHOWVEC(v) std::cout << #v << ": " << v.x << " " << v.y << " " << v.z << std::endl

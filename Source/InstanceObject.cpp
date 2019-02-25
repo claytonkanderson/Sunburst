@@ -6,6 +6,8 @@
 //  Copyright © 2017 Clayton Anderson. All rights reserved.
 //
 
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include "InstanceObject.h"
 InstanceObject::InstanceObject() {}
 InstanceObject::InstanceObject(Object * obj)

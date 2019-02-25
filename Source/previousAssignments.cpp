@@ -5,6 +5,7 @@
 //  Created by Clayton Anderson on 4/23/17.
 //  Copyright © 2017 Clayton Anderson. All rights reserved.
 //
+#define GLM_ENABLE_EXPERIMENTAL
 
 #include "previousAssignments.h"
 
@@ -43,7 +44,7 @@ void project4() {
     
     // Load dragon mesh
     MeshObject dragon;
-    dragon.LoadPLY("dragon.ply");
+    dragon.LoadPLY("../../Models/dragon.ply");
     dragon.Smooth();
     
     
@@ -81,7 +82,7 @@ void project4() {
     cam.LookAt(glm::vec3(-0.5f,0.25f,-0.2f), glm::vec3(0.0f,0.15f,-0.15f),glm::vec3(0,1,0));
     SHOWVEC(cam.pos);
     SHOWVEC(cam.look_at);
-    cam.SetFOV(40.0f);
+    cam.SetFOV(80.0f);
     cam.SetAspect(1.33f);
     cam.SetSuperSample(4,4);
     cam.SetJitter(true);
@@ -111,7 +112,7 @@ void project3() {
     
     // Load dragon mesh
     MeshObject dragon;
-    dragon.LoadPLY("dragon.ply");
+    dragon.LoadPLY("../../Models/dragon.ply");
     dragon.Smooth();
     
     // Create box tree
@@ -346,96 +347,96 @@ void project1EC()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void project1Implicit()
-{
-    srand(0);
-    Scene scn;
-    scn.SetSkyColor(Color(0.8f, 0.8f, 1.0f));
-    
-    PlaneObject ground;
-    scn.AddObject(ground);
-    
-    auto sumFun = [](float (*f)(float, float ,float), float (*g)(float,float,float)) {
-        return [f, g](float x, float y, float z){return f(x,y,z) + g(x,y,z);};
-    };
-    //
-    auto gauss1 = [](float x, float y, float z) { return (x-2)*(x-2) + (y-2)*(y-2) + (z+3)*(z+3) - 4; };
-    //    auto guass1d = [](float x, float y, float z) { return std::make_tuple(2*(x-2),2*(y-2),2*(z+3));
-    auto gauss2 = [](float x, float y, float z) { return (x+2)*(x+2) + (y-2)*(y-2) + (z+3)*(z+3) - 4; };
-    //    auto gauss2d = [](float x, float y, float z) { return std::make_tuple(2*(x+2),2*(y-2),2*(z+3));
-    auto sumGauss = sumFun(gauss1, gauss2);
-    
-    
-    // Sphere
-    //    ImplicitSurface surf( [](float x, float y, float z) { return (x-2)*(x-2) + (y-2)*(y-2) + (z+3)*(z+3) - 4; });
-    //    surf.SetGrad( [](float x, float y, float z) { return std::make_tuple(2*(x-2),2*(y-2),2*(z+3)); });
-    //    scn.AddObject(surf);
-    
-    
-    // Gaussian
-//    ImplicitSurface surf2( [](float x, float y, float z) { return y - 5*exp(-x*x - z*z); });
-//    surf2.SetGrad( [](float x, float y, float z) {
-//        return std::make_tuple(2*5*x*exp(-x*x-z*z),1.0f,2*5*z*exp(-x*x-z*z)); });
-    
-    //    surf2.SetF(sumGauss);
-//    scn.AddObject(surf2);
-    
-    // Cube-Sphere
-    //    ImplicitSurface surf3( [](float x, float y, float z) { return (x+4)*(x+4)*(x+4)*(x+4) + (y-2)*(y-2)*(y-2)*(y-2) + z*z*z*z - 4; });
-    //    surf3.SetGrad( [](float x, float y, float z) { return std::make_tuple(4*(x+4)*(x+4)*(x+4),4*(y-2)*(y-2)*(y-2),4*z*z*z); });
-    //    scn.AddObject(surf3);
-    
-        ImplicitSurface surf4( [](float x, float y, float z) { return y - 1 - sin(x)*cos(z); });
-        surf4.SetGrad( [](float x, float y, float z) { return std::make_tuple(-cos(x)*cos(z),1.0f,sin(x)*sin(z)); });
-        scn.AddObject(surf4);
-    
-    //    ImplicitSurface surf5( [](float x, float y, float z) { return y - 1 - sin(x)*cos(z) + sin(1.41f*x)*cos(0.707f*z); });
-    //    surf5.SetGrad( [](float x, float y, float z) {
-    //        return std::make_tuple(-cos(x)*cos(z)+1.41f*cos(1.41f*x)*cos(0.707f*z),
-    //                               1.0f,
-    //                               sin(x)*sin(z)-0.707f*sin(1.41f*x)*sin(0.707f*z)); });
-    //    scn.AddObject(surf5);
-    
-    // Heart
-    //        ImplicitSurface surf6( [](float x, float y, float z) {
-    //            return pow(x*x+2.25f*z*z+(y-2)*(y-2)-1,3.0f) -(x*x + 0.1125f*z*z)*(y-2)*(y-2)*(y-2); });
-    //        surf6.SetGrad( [](float x, float y, float z) {
-    //            return std::make_tuple(6.0f*x*pow(x*x+2.25f*z*z+(y-2)*(y-2)-1,2.0f)-2.0f*x*(y-2)*(y-2)*(y-2),
-    //                                   13.5f*z*pow(x*x+2.25f*z*z+(y-2)*(y-2)-1,2.0f)-0.225f*z*(y-2)*(y-2)*(y-2),
-    //                                   6.0f*(y-2)*pow(x*x+2.25f*z*z+(y-2)*(y-2)-1,2.0f)-(3.0f*x*x+0.3375f*z*z)*(y-2)*(y-2)); });
-    //        scn.AddObject(surf6);
-    
-    
-    
-    
-    
-    //    ImplicitSurface surf7;
-    //    int numFreqs = 10;
-    //    for (int i = 0; i < numFreqs; i++) surf7.freqs.push_back(glm::linearRand(0.1f, 10.f));
-    //
-    //    scn.AddObject(surf7);
-    
-    
-    // Create lights
-    DirectLight sunlgt;
-    sunlgt.SetBaseColor(Color(0.9f, 0.3f, 0.4f));
-    sunlgt.SetIntensity(1.0f);
-    sunlgt.SetDirection(glm::vec3(2.0f, -3.0f, -2.0f));
-    scn.AddLight(sunlgt);
-    
-    PointLight bluelgt;
-    bluelgt.SetBaseColor(Color(0.0f, 0.2f, 1.0f));
-    bluelgt.SetIntensity(2.0f);
-    bluelgt.SetPosition(glm::vec3(2.0f, 4.0f, 0.0f));
-    scn.AddLight(bluelgt);
-    
-    Camera cam;
-    cam.LookAt(glm::vec3(0.0f,7.0f,6.0f),glm::vec3(0.0f,1.5f,0.0f),glm::vec3(0,1,0));
-    cam.SetFOV(40.0f);
-    cam.SetAspect(1.33f);
-    cam.SetResolution(800,600);
-    // Render image
-    cam.RenderMultiThread(scn, 8);
-    //    cam.Render(scn);
-    cam.SaveBitmap("implict.bmp");
-}
+//void project1Implicit()
+//{
+//    srand(0);
+//    Scene scn;
+//    scn.SetSkyColor(Color(0.8f, 0.8f, 1.0f));
+//    
+//    PlaneObject ground;
+//    scn.AddObject(ground);
+//    
+//    auto sumFun = [](float (*f)(float, float ,float), float (*g)(float,float,float)) {
+//        return [f, g](float x, float y, float z){return f(x,y,z) + g(x,y,z);};
+//    };
+//    //
+//    auto gauss1 = [](float x, float y, float z) { return (x-2)*(x-2) + (y-2)*(y-2) + (z+3)*(z+3) - 4; };
+//    //    auto guass1d = [](float x, float y, float z) { return std::make_tuple(2*(x-2),2*(y-2),2*(z+3));
+//    auto gauss2 = [](float x, float y, float z) { return (x+2)*(x+2) + (y-2)*(y-2) + (z+3)*(z+3) - 4; };
+//    //    auto gauss2d = [](float x, float y, float z) { return std::make_tuple(2*(x+2),2*(y-2),2*(z+3));
+//    auto sumGauss = sumFun(gauss1, gauss2);
+//    
+//    
+//    // Sphere
+//    //    ImplicitSurface surf( [](float x, float y, float z) { return (x-2)*(x-2) + (y-2)*(y-2) + (z+3)*(z+3) - 4; });
+//    //    surf.SetGrad( [](float x, float y, float z) { return std::make_tuple(2*(x-2),2*(y-2),2*(z+3)); });
+//    //    scn.AddObject(surf);
+//    
+//    
+//    // Gaussian
+////    ImplicitSurface surf2( [](float x, float y, float z) { return y - 5*exp(-x*x - z*z); });
+////    surf2.SetGrad( [](float x, float y, float z) {
+////        return std::make_tuple(2*5*x*exp(-x*x-z*z),1.0f,2*5*z*exp(-x*x-z*z)); });
+//    
+//    //    surf2.SetF(sumGauss);
+////    scn.AddObject(surf2);
+//    
+//    // Cube-Sphere
+//    //    ImplicitSurface surf3( [](float x, float y, float z) { return (x+4)*(x+4)*(x+4)*(x+4) + (y-2)*(y-2)*(y-2)*(y-2) + z*z*z*z - 4; });
+//    //    surf3.SetGrad( [](float x, float y, float z) { return std::make_tuple(4*(x+4)*(x+4)*(x+4),4*(y-2)*(y-2)*(y-2),4*z*z*z); });
+//    //    scn.AddObject(surf3);
+//    
+//        ImplicitSurface surf4( [](float x, float y, float z) { return y - 1 - sin(x)*cos(z); });
+//        surf4.SetGrad( [](float x, float y, float z) { return std::make_tuple(-cos(x)*cos(z),1.0f,sin(x)*sin(z)); });
+//        scn.AddObject(surf4);
+//    
+//    //    ImplicitSurface surf5( [](float x, float y, float z) { return y - 1 - sin(x)*cos(z) + sin(1.41f*x)*cos(0.707f*z); });
+//    //    surf5.SetGrad( [](float x, float y, float z) {
+//    //        return std::make_tuple(-cos(x)*cos(z)+1.41f*cos(1.41f*x)*cos(0.707f*z),
+//    //                               1.0f,
+//    //                               sin(x)*sin(z)-0.707f*sin(1.41f*x)*sin(0.707f*z)); });
+//    //    scn.AddObject(surf5);
+//    
+//    // Heart
+//    //        ImplicitSurface surf6( [](float x, float y, float z) {
+//    //            return pow(x*x+2.25f*z*z+(y-2)*(y-2)-1,3.0f) -(x*x + 0.1125f*z*z)*(y-2)*(y-2)*(y-2); });
+//    //        surf6.SetGrad( [](float x, float y, float z) {
+//    //            return std::make_tuple(6.0f*x*pow(x*x+2.25f*z*z+(y-2)*(y-2)-1,2.0f)-2.0f*x*(y-2)*(y-2)*(y-2),
+//    //                                   13.5f*z*pow(x*x+2.25f*z*z+(y-2)*(y-2)-1,2.0f)-0.225f*z*(y-2)*(y-2)*(y-2),
+//    //                                   6.0f*(y-2)*pow(x*x+2.25f*z*z+(y-2)*(y-2)-1,2.0f)-(3.0f*x*x+0.3375f*z*z)*(y-2)*(y-2)); });
+//    //        scn.AddObject(surf6);
+//    
+//    
+//    
+//    
+//    
+//    //    ImplicitSurface surf7;
+//    //    int numFreqs = 10;
+//    //    for (int i = 0; i < numFreqs; i++) surf7.freqs.push_back(glm::linearRand(0.1f, 10.f));
+//    //
+//    //    scn.AddObject(surf7);
+//    
+//    
+//    // Create lights
+//    DirectLight sunlgt;
+//    sunlgt.SetBaseColor(Color(0.9f, 0.3f, 0.4f));
+//    sunlgt.SetIntensity(1.0f);
+//    sunlgt.SetDirection(glm::vec3(2.0f, -3.0f, -2.0f));
+//    scn.AddLight(sunlgt);
+//    
+//    PointLight bluelgt;
+//    bluelgt.SetBaseColor(Color(0.0f, 0.2f, 1.0f));
+//    bluelgt.SetIntensity(2.0f);
+//    bluelgt.SetPosition(glm::vec3(2.0f, 4.0f, 0.0f));
+//    scn.AddLight(bluelgt);
+//    
+//    Camera cam;
+//    cam.LookAt(glm::vec3(0.0f,7.0f,6.0f),glm::vec3(0.0f,1.5f,0.0f),glm::vec3(0,1,0));
+//    cam.SetFOV(40.0f);
+//    cam.SetAspect(1.33f);
+//    cam.SetResolution(800,600);
+//    // Render image
+//    cam.RenderMultiThread(scn, 8);
+//    //    cam.Render(scn);
+//    cam.SaveBitmap("implict.bmp");
+//}

@@ -5,6 +5,7 @@
 //  Created by Clayton Anderson on 5/4/17.
 //  Copyright © 2017 Clayton Anderson. All rights reserved.
 //
+#define GLM_ENABLE_EXPERIMENTAL
 
 #include "RayTrace.hpp"
 

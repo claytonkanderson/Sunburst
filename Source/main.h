@@ -6,8 +6,7 @@
 //  Copyright © 2017 Clayton Anderson. All rights reserved.
 //
 
-#ifndef main_h
-#define main_h
+#pragma once
 
 #include "MeshObject.h"
 #include "InstanceObject.h"
@@ -35,4 +34,3 @@ using namespace std::chrono;
 
 void finalProject();
 
-#endif /* main_h */

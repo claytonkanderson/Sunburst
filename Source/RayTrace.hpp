@@ -13,7 +13,7 @@
 #include "Ray.h"
 #include "Intersection.h"
 #include "Material.h"
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 
 using namespace glm;
 

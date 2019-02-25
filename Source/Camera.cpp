@@ -6,6 +6,8 @@
 //  Copyright © 2017 Clayton Anderson. All rights reserved.
 //
 
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include "Camera.h"
 
 int Camera::XRes, Camera::YRes;
@@ -52,7 +54,7 @@ void Camera::SetAspect(float aspect) {
     Aspect = aspect;
 }
 
-void Camera::SaveBitmap(char * filename) { BMP->SaveBMP(filename); }
+void Camera::SaveBitmap(const char * filename) { BMP->SaveBMP(filename); }
 
 // Render image
 void Camera::Render(Scene &scn)
