@@ -40,17 +40,6 @@ void AshikhminMaterial::ComputeReflectance(Color &col, const glm::vec3 &in, cons
         
 	specularReflectivity *= SpecularLevel + (1 - SpecularLevel)*schlickProduct;
 
-	//printf("\n");
-	//printf("hn term : %f\n", hn);
-	//printf("nk1 term : %f\n", nk1);
-	//printf("nk2 term : %f\n", nk2);
-	//printf("hk term : %f\n", hk);
-	//printf("sqrt term : %f\n", sqrtTerm);
-	//printf("expo term : %f\n", exponentTerm);
-	//printf("denom term : %f\n", denom);
-	//printf("spec reflect %f\n", specularReflectivity);
-	//printf("\n");
-
     Color specColor;
 	specColor.Red = specularReflectivity * SpecularColor.Red;
 	specColor.Green = specularReflectivity * SpecularColor.Green;
