@@ -34,7 +34,7 @@ private:
     glm::mat4 Matrix;
     glm::mat4 Inverse;
     Object * Child;
-    Material * mtl;
+    Material * mtl = nullptr;
     
 };
 

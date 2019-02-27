@@ -47,16 +47,15 @@ void project4() {
     dragon.LoadPLY("../../Models/dragon.ply");
     dragon.Smooth();
     
-    
     // Create box tree
     BoxTreeObject tree;
     tree.Construct(dragon);
     
     // Create dragon instances
-    glm::mat4 mtx;
+    glm::mat4 mtx(1.0f);
     for(int i=0;i<nummtls;i++) {
         InstanceObject *inst=new InstanceObject(&tree);
-        mtx[3]=glm::vec4(0.0f,0.0f,-0.1f*float(i),1.0f);
+        mtx[3]=glm::vec4(0,0,-0.1f*float(i),1.0f);
         inst->SetMatrix(mtx);
         inst->SetMaterial(&mtl[i]);
         scn.AddObject(*inst);
@@ -78,28 +77,25 @@ void project4() {
     
     // Create camera
     Camera cam;
-    cam.SetResolution(800,600);
+    cam.SetResolution(1600,1200);
     cam.LookAt(glm::vec3(-0.5f,0.25f,-0.2f), glm::vec3(0.0f,0.15f,-0.15f),glm::vec3(0,1,0));
     SHOWVEC(cam.pos);
     SHOWVEC(cam.look_at);
-    cam.SetFOV(80.0f);
+    cam.SetFOV(40.0f);
     cam.SetAspect(1.33f);
-    cam.SetSuperSample(4,4);
+    cam.SetSuperSample(10,10);
     cam.SetJitter(true);
     cam.SetShirley(true);
-    //    cam.ShootSingleRay(425, 262, scn);
+
     // Render image
-    cam.Render(scn);
+	cam.RenderMultiThread(scn, 8);
     cam.SaveBitmap("project4.bmp");
 }
-
-
 
 void project3() {
     // Create scene
     Scene scn;
     scn.SetSkyColor(Color(0.8f,0.9f,1.0f));
-    //    scn.SetSkyColor(Color(0,0,0));
     
     // Create ground
     LambertMaterial groundMtl;
@@ -133,10 +129,10 @@ void project3() {
     const int numDragons=4;
     Material *mtl[numDragons]={&white,&metal,&red,&white};
     
-    
     // Create dragon instances
-    glm::mat4 mtx;
-    for(int i=0;i<numDragons;i++) {
+    glm::mat4 mtx(1.0f);
+    for(int i=0;i<numDragons;i++) 
+	{
         InstanceObject *inst=new InstanceObject(&tree);
         mtx[3]=glm::vec4(0.0f,0.0f,0.3f*(float(i)/float(numDragons-1)-0.5f),1.0f);
         inst->SetMatrix(mtx);
@@ -157,7 +153,7 @@ void project3() {
     cam.SetAspect(1.33f);
     cam.LookAt(glm::vec3(-0.5f,0.25f,-0.2f),glm::vec3(0.0f,0.15f,0.0f),glm::vec3(0,1.0f,0));
     cam.SetFOV(40.0f);
-    cam.SetSuperSample(10,10);
+    cam.SetSuperSample(2,2);
     cam.SetJitter(true);
     cam.SetShirley(true);
     // Render image
@@ -192,11 +188,11 @@ void project2()
     //    std::cout <<  std::endl;
     //
     //    // Create dragon
+
     MeshObject dragon;
-    dragon.LoadPLY("dragon.ply");
+    dragon.LoadPLY("../../Models/dragon.ply");
     dragon.Smooth();
     BoxTreeObject tree;
-    
     
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
     tree.Construct(dragon);
@@ -207,8 +203,8 @@ void project2()
     scn.AddObject(tree);
     //    scn.AddObject(dragon);
     
-    
     // Create instance
+
     InstanceObject inst(&tree);
     glm::mat4x4 mtx=glm::eulerAngleY(3.141593f);
     mtx[3]=glm::vec4(-0.05f,0.0f,-0.1f,1.0f);
@@ -242,11 +238,25 @@ void project2()
     cam.SetFOV(40.0f);
     cam.SetAspect(1.33f);
     cam.SetResolution(800,600);
+	cam.SetSuperSample(4,4);
     // Render image
     t1 = high_resolution_clock::now();
-    cam.RenderMultiThread(scn, 8);
-    //    cam.Render(scn);
+    //cam.RenderMultiThread(scn, 8);
+    cam.Render(scn);
     
+	//LambertMaterial white;
+	//Intersection isec;
+	//isec.Normal = glm::vec3(0, 1, 0);
+
+	//glm::vec3 inVec;
+	//glm::vec3 outVec;
+	//Color outColor;
+	//for (int i = 0; i < 10; i++)
+	//{
+	//	white.GenerateSample(isec, inVec, outVec, outColor);
+	//	printf("Sampled Out Vec : (%f, %f, %f)\n", outVec.x, outVec.y, outVec.z);
+	//}
+
     t2 = high_resolution_clock::now();
     time_span = duration_cast<duration<double>>(t2 - t1);
     

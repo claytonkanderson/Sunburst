@@ -32,7 +32,8 @@ public:
             // Primary
             if (ray.type == 0)
             {
-                if(Objects[i]->Intersect(ray,hit)){ success=true; }
+                if(Objects[i]->Intersect(ray,hit))
+					success = true;
             }
             
             // Shadow
@@ -48,7 +49,8 @@ public:
             // Reflection
             else if (ray.type == 2)
             {
-                if(Objects[i]->Intersect(ray,hit)) success=true;
+                if(Objects[i]->Intersect(ray,hit)) 
+					success=true;
             }
 			
         }

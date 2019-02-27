@@ -144,27 +144,13 @@ void Camera::Render(Scene &scn)
                     ray.Direction = normalize(fx*scaleX*a + fy*scaleY*b - c);
                     
                     rayTracer.TraceRay(ray, intersection);
-                    
-                    
-                    if (isnan(intersection.Shade.Red) || isnan(intersection.Shade.Blue) || isnan(intersection.Shade.Green))
-                    {
-                        std::cout << "Camera nan" << std::endl;
-                        intersection.Shade.Red = 0.0f;
-                        intersection.Shade.Blue = 0.0f;
-                        intersection.Shade.Green = 0.0f;
-                    }
-                    
+					
                     colorAccumulator.Add(intersection.Shade);                    
                 }
             }
             
             colorAccumulator.Scale(1.0f / (SuperSampleY*SuperSampleX));
-            
-//            std::cout << colorAccumulator.Red << std::endl;
-//            colorAccumulator.Red = sqrt(colorAccumulator.Red);
-//            colorAccumulator.Green = sqrt(colorAccumulator.Green);
-//            colorAccumulator.Blue = sqrt(colorAccumulator.Blue);
-//            colorAccumulator.PrintColorRGB();
+           
             BMP->SetPixel(j, i, colorAccumulator.ToInt());
         }
     }
@@ -206,7 +192,6 @@ void Camera::ThreadFunc(Scene &scn, int minX, int maxX, int minY, int maxY)
     
     Ray ray;
     Intersection intersection;
-    //    intersection.Mtl = new LambertMaterial();
     
     a = vec3(WorldMatrix[0]);
     b = vec3(WorldMatrix[1]);
@@ -217,79 +202,79 @@ void Camera::ThreadFunc(Scene &scn, int minX, int maxX, int minY, int maxY)
     Color color2;
     
     Intersection intersection2;
-    
+	RandomGen randomGenerator;
+	RayTrace rayTracer(scn);
+
+	float jitterX = 1.0 / SuperSampleX;
+	float jitterY = 1.0 / SuperSampleY;
+
     for (i = minY; i < maxY; i++)
     {
         for (j = minX; j < maxX; j++)
         {
-            
-            
-            ray.Origin = d;
-            ray.type = 0; // Primary Ray
-            
-            fx = (float(j) + 0.5f) / float(XRes) - 0.5f;
-            fy = (float(i) + 0.5f) / float(YRes) - 0.5f;
-            
-            ray.Direction = normalize(fx*scaleX*a + fy*scaleY*b - c);
-            
-            // Hit a triangle
-            if (scn.Intersect(ray, intersection))
-            {
-                
-                color.Set(0,0,0);
-                
-                for(k = 0; k < scn.GetNumLights(); k++)
-                {
-                    vec3 toLight;
-                    vec3 lightPos;
-                    float intensity;
-                    intensity = scn.GetLight(k).Illuminate(intersection.Position, color2, toLight, lightPos);
-                    color2.Scale(intensity);
-                    
-                    // Surface is not facing the light
-                    float lightDot = dot(toLight, intersection.Normal);
-                    if (lightDot < 0)
-                        continue;
-                    
-                    Ray shadowRay;
-                    shadowRay.Origin = intersection.Position;
-                    shadowRay.Direction = toLight;
-                    shadowRay.type = 1;
-                    
-                    intersection2.HitDistance = 1e10;
-                    
-                    if (scn.Intersect(shadowRay, intersection2))
-                    {
-                        //                        float intersectionDist = l2Norm(intersection2.Position - shadowRay.Origin);
-                        //                        float lightDistSquared = l2Norm(lightPos - shadowRay.Origin);
-                        //                        if (intersection2.HitDistance < lightDistSquared)
-                        float intersectionDist = l2Norm(intersection2.Position -shadowRay.Origin);
-                        float lightDist = l2Norm(lightPos - shadowRay.Origin);
-                        if (intersectionDist < lightDist)
-                            continue;
-                    }
-                    
-                    Color tempColor;
-                    // Don't know what the 3rd component is for, it's unused
-                    intersection.Mtl->ComputeReflectance(tempColor, toLight, toLight, intersection);
-                    
-                    tempColor.Multiply(color2);
-                    
-                    color.Add(tempColor);
-                }
-                
-                intersection.Shade = color;
-                BMP->SetPixel(j, i, intersection.Shade.ToInt());
-            }
-            else
-                BMP->SetPixel(j, i, scn.GetSkyColor().ToInt());
-            
-            // Reset intersection properties
-            intersection.HitDistance = 1e10;
-            //intersection.Mtl=0;
+
+			rayTracer.PrimaryRays++;
+
+			ray.Origin = d;
+			ray.type = 0; // Primary Ray
+			Color colorAccumulator(0, 0, 0);
+
+			// Assuming uniform sampling with jittered and or shirley
+			for (int kx = 0; kx < SuperSampleX; kx++)
+			{
+
+				for (int ky = 0; ky < SuperSampleY; ky++)
+				{
+					intersection.HitDistance = 1e10;
+					intersection.Shade.Set(0, 0, 0);
+
+					float xShift, yShift;
+
+					// Centers of sub-pixels
+					xShift = kx * jitterX + 0.5f;
+					yShift = ky * jitterY + 0.5f;
+
+					if (JitterFlag)
+					{
+						xShift += randomGenerator.GenerateRandom(-jitterX, jitterX);
+						yShift += randomGenerator.GenerateRandom(-jitterY, jitterY);
+						fx = (float(j) + xShift) / float(XRes) - 0.5f;
+						fy = (float(i) + yShift) / float(YRes) - 0.5f;
+					}
+
+
+					if (ShirleyFlag)
+					{
+						float rand1 = randomGenerator.GenerateRandom(0, 1);
+						float rand2 = randomGenerator.GenerateRandom(0, 1);
+
+						// Shirley Transformation
+						rand1 = rand1 < 0.5f ? -0.5 + sqrt(2.0*rand1) : 1.5 - sqrt(2.0 - 2.0*rand1);
+						rand2 = rand2 < 0.5f ? -0.5 + sqrt(2.0*rand2) : 1.5 - sqrt(2.0 - 2.0*rand2);
+
+						fx = (float(j) + rand1) / float(XRes) - 0.5f;
+						fy = (float(i) + rand2) / float(YRes) - 0.5f;
+					}
+
+					if (!JitterFlag && !ShirleyFlag) {
+						fx = (float(j) + xShift) / float(XRes) - 0.5f;
+						fy = (float(i) + yShift) / float(YRes) - 0.5f;
+					}
+
+
+					ray.Direction = normalize(fx*scaleX*a + fy * scaleY*b - c);
+
+					rayTracer.TraceRay(ray, intersection);
+
+					colorAccumulator.Add(intersection.Shade);
+				}
+			}
+
+			colorAccumulator.Scale(1.0f / (SuperSampleY*SuperSampleX));
+
+			BMP->SetPixel(j, i, colorAccumulator.ToInt());
         }
     }
-    
 }
 
 void Camera::ShootSingleRay(int xPix, int yPix, Scene &scn)

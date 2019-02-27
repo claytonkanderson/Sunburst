@@ -23,10 +23,6 @@ public:
     {
         outDir = normalize(-inDir+2.0f*dot(isect.Normal,inDir)*isect.Normal);
         outColor = DiffuseColor;
-//        std::cout << "Metal material" << std::endl;
-//        std::cout << "Metal material normal.y: " << isect.Normal.y << std::endl;
-//        std::cout << "Metal material position.y: " << isect.Position.y << std::endl;
-//        std::cout << "Metal reflection dir.y: " << outDir.y << std::endl;
     }
     
     float ComputeIntensity(const glm::vec3 &lightDir, const glm::vec3 &normal)

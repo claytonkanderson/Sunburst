@@ -35,7 +35,8 @@ bool RayTrace::TraceRay(const Ray &ray, Intersection &hit, int depth)
         colorLight.Scale(intensity);
         
         float lightDot = dot(toLight, hit.Normal);
-        if (lightDot < 0) continue;
+        if (lightDot < 0) 
+			continue;
         
         Ray shadowRay;
         Intersection shadowIntersection;
@@ -48,9 +49,10 @@ bool RayTrace::TraceRay(const Ray &ray, Intersection &hit, int depth)
         if (Scn->Intersect(shadowRay, shadowIntersection))
         {
             // Could optimize this a bit more
-            float intersectionDist = l2Norm(shadowIntersection.Position -shadowRay.Origin);
-            float lightDist = l2Norm(lightPos - shadowRay.Origin);
-            if (intersectionDist < lightDist) continue;
+            float intersectionDist = glm::l2Norm(shadowIntersection.Position -shadowRay.Origin);
+            float lightDist = glm::l2Norm(lightPos - shadowRay.Origin);
+            if (intersectionDist < lightDist) 
+				continue;
         }
         
         Color materialColor;
@@ -67,18 +69,14 @@ bool RayTrace::TraceRay(const Ray &ray, Intersection &hit, int depth)
         hit.Shade.Add(colorLight);
     }
 
-    if (depth == MaxDepth) return true;
+    if (depth == MaxDepth) 
+		return true;
     
     SecondaryRays++;
-    vec3 reflectionDir;
-    Color reflectionColor; // Really the reflection intensity
+    glm::vec3 reflectionDir;
+    Color reflectionColor;
     hit.Mtl->GenerateSample(hit, -ray.Direction, reflectionDir, reflectionColor);
-    
-    Color materialColor;
-    
-    // Light comes in in the -ray.Direction direction and goes out in the reflection direction
-//    hit.Mtl->ComputeReflectance(materialColor, -ray.Direction, reflectionDir, hit);
-    
+
     Ray reflectionRay;
     reflectionRay.Origin = hit.Position;
     reflectionRay.Direction = reflectionDir;
@@ -90,10 +88,12 @@ bool RayTrace::TraceRay(const Ray &ray, Intersection &hit, int depth)
     
     // Get light color from reflection hit
     TraceRay(reflectionRay, reflectionHit, depth+1);
-    reflectionHit.Shade.Multiply(reflectionColor); // Ray intensity Weighting (Monte Carlo + Reflectance?)
-//    materialColor.Multiply(reflectionHit.Shade);   // Material Reflectance Weighting
-//    hit.Shade.Add(materialColor);
-    hit.Shade.Add(reflectionHit.Shade);
-    
+	
+	// Ray intensity Weighting (Monte Carlo + Reflectance)
+    reflectionHit.Shade.Multiply(reflectionColor); 
+
+	// Add reflected light to shaded patch
+	hit.Shade.Add(reflectionHit.Shade);
+
     return true;
 }

@@ -24,8 +24,8 @@ bool InstanceObject::Intersect(const Ray &ray, Intersection &hit)
     ray2.Direction=glm::vec3( Inverse * glm::vec4(ray.Direction,0));
     
     // Do intersection test in Material Frame
-    if(Child->Intersect(ray2, hit2)==false) return false;
-    
+    if(!Child->Intersect(ray2, hit2)) 
+		return false;
     
     // Convert back to World Frame
     glm::vec3 hitPos = glm::vec3( Matrix * glm::vec4(hit2.Position,1) );
@@ -39,7 +39,11 @@ bool InstanceObject::Intersect(const Ray &ray, Intersection &hit)
         hit.TangentU=glm::vec3( Matrix * glm::vec4(hit2.TangentU,0));
         hit.TangentV=glm::vec3( Matrix * glm::vec4(hit2.TangentV,0));
         hit.HitDistance = hitDist;
-        hit.Mtl = mtl;
+		// Instanced objects can have a separate material
+		if (mtl == nullptr)
+			hit.Mtl = hit2.Mtl;
+		else 
+			hit.Mtl = mtl;
         
         if (MultiMaterialFlag)
         {
@@ -109,19 +113,8 @@ bool InstanceObject::Intersect(const Ray &ray, Intersection &hit)
             }
         }
     }
+
     return true;
-    
-    // From slides
-    //    Ray ray2;
-    //    ray2.Origin=glm::vec3( Inverse * glm::vec4(ray.Origin,1) );
-    //    ray2.Direction=glm::vec3(Inverse * glm::vec4(ray.Direction,0));
-    //    if(Child->Intersect(ray2, hit)==false) return false;
-    //    hit.Position=glm::vec3( Matrix * glm::vec4(hit.Position,1) );
-    //    hit.Normal=glm::vec3( Matrix * glm::vec4(hit.Normal,0));
-    //    hit.HitDistance=glm::distance(ray.Origin,hit.Position); // Correct for any scaling
-    //    return true;
-    
-    
 }
 void InstanceObject::SetChild(Object &obj) {Child = &obj;}
 void InstanceObject::SetMatrix(glm::mat4 &mtx) {Matrix = mtx; Inverse = glm::inverse(Matrix);}

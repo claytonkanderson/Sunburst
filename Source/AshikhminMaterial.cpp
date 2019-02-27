@@ -13,10 +13,10 @@
 
 void AshikhminMaterial::ComputeReflectance(Color &col, const glm::vec3 &in, const glm::vec3 &out, const Intersection &hit)
 {
-    vec3 k1 = in; // To Light
-    vec3 k2 = out; // To Viewer (negative of ray.Direction)
-    vec3 n = hit.Normal;
-    vec3 h = normalize(k1 + k2); // Assuming in, out are normalized
+    glm::vec3 k1 = in; // To Light
+    glm::vec3 k2 = out; // To Viewer (negative of ray.Direction)
+    glm::vec3 n = hit.Normal;
+    glm::vec3 h = glm::normalize(k1 + k2); // Assuming in, out are normalized
     
     float hu = dot(h, hit.TangentU);
     float hv = dot(h, hit.TangentV);
@@ -37,16 +37,24 @@ void AshikhminMaterial::ComputeReflectance(Color &col, const glm::vec3 &in, cons
     float denom = hk * max(nk1, nk2);
     float schlickProduct = (1-hk)*(1-hk)*(1-hk)*(1-hk)*(1-hk);
     specularReflectivity = sqrtTerm * exponentTerm / denom;
-    
-    if (isnan(specularReflectivity) || isnan(schlickProduct))
-        std::cout << "Specular nan" << std::endl;
-    
+        
+	specularReflectivity *= SpecularLevel + (1 - SpecularLevel)*schlickProduct;
+
+	//printf("\n");
+	//printf("hn term : %f\n", hn);
+	//printf("nk1 term : %f\n", nk1);
+	//printf("nk2 term : %f\n", nk2);
+	//printf("hk term : %f\n", hk);
+	//printf("sqrt term : %f\n", sqrtTerm);
+	//printf("expo term : %f\n", exponentTerm);
+	//printf("denom term : %f\n", denom);
+	//printf("spec reflect %f\n", specularReflectivity);
+	//printf("\n");
+
     Color specColor;
-    specColor.Red = SpecularLevel * SpecularColor.Red + (1 - SpecularLevel * SpecularColor.Red) * schlickProduct;
-    specColor.Green = SpecularLevel *  SpecularColor.Green + (1 - SpecularLevel * SpecularColor.Green) * schlickProduct;
-    specColor.Blue = SpecularLevel * SpecularColor.Blue + (1 - SpecularLevel * SpecularColor.Blue) * schlickProduct;
-    
-    specColor.Scale(specularReflectivity);
+	specColor.Red = specularReflectivity * SpecularColor.Red;
+	specColor.Green = specularReflectivity * SpecularColor.Green;
+	specColor.Blue = specularReflectivity * SpecularColor.Blue;;
     
     float diffuseReflectivity;
     diffuseReflectivity = 28.0f/(23.0f*3.14159);
@@ -61,42 +69,23 @@ void AshikhminMaterial::ComputeReflectance(Color &col, const glm::vec3 &in, cons
     float val2 = (1-0.5f*dot(n,k2));
     float term2 = 1 - val2*val2*val2*val2*val2;
     diffuseReflectivity *= term1*term2;
-    
-    if (isnan(diffuseReflectivity))
-        std::cout << "Diffuse nan" << std::endl;
-    
+   
     diffColor.Scale(diffuseReflectivity);
-    
-//    SHOWVAR(sqrtTerm);
-//    SHOWVAR(exponentTerm);
-//    SHOWVAR(denom);
-//    SHOWVAR(schlickProduct);
-//    SHOWVAR(specularReflectivity);
-//    specColor.PrintColor();
-//    SHOWVAR(diffuseReflectivity);
-//    diffColor.PrintColorRGB();
-    
+
     Color netColor;
     netColor = diffColor;
     netColor.Add(specColor);
     col.Multiply(netColor);
-    
-//    col.PrintColorRGB();
 }
 
 void AshikhminMaterial::GenerateSample(const Intersection &isect,const glm::vec3 &inDir, glm::vec3 &outDir,Color &outColor)
 {
-//    std::cout << "Ashikhmin material" << std::endl;
-//    std::cout << "Ashikhmin material normal.y: " << isect.Normal.y << std::endl;
-//    std::cout << "Ashikhmin material position.y: " << isect.Position.y << std::endl;
-//    SHOWVEC(isect.Normal);
-//    SHOWVEC(isect.Position);
-    vec3 in = inDir;
+    glm::vec3 in = inDir;
     
     // Need to decide if specular or diffuse
-    float p = randomGenerator->GenerateRandom(0, SpecularLevel+DiffuseLevel);
+    float p = randomGenerator->GenerateRandom(0.001f, SpecularLevel+DiffuseLevel);
     
-    if (p < SpecularLevel) {
+    if (p <= SpecularLevel) {
         
         float z1 = randomGenerator->GenerateRandom(0, 1);
         float z2 = randomGenerator->GenerateRandom(0, 1);

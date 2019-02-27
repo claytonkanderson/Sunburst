@@ -8,8 +8,10 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class LambertMaterial:public Material {
+class LambertMaterial : public Material 
+{
 public:
+
     LambertMaterial() {randomGenerator = new RandomGen(); }
     
     void ComputeReflectance(Color &col, const glm::vec3 &lightDir, const glm::vec3 &out, const Intersection &hit) {
@@ -19,6 +21,7 @@ public:
     // Need to rotate outDir so that it's correct for triangles whose normals aren't in the y-dir
     void GenerateSample(const Intersection &isect,const glm::vec3 &inDir,glm::vec3 &outDir,Color &outColor)
     {
+		// Cosine Weighted Hemisphere
         float s, t, u, v;
         s = randomGenerator->GenerateRandom(0,1);
         t = randomGenerator->GenerateRandom(0,1);

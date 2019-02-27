@@ -30,7 +30,10 @@ public:
         seed ^= seed >> 35;
         seed ^= seed << 4;
         
-        return ((float)seed / (float)ULONG_MAX) * (max - min) + min;
+		// TODO : NOT WORKING, REPEATS AFTER 4 iterations
+        //return ((float)seed / (float)ULONG_MAX) * (max - min) + min;
+		float ranf = ((float)rand()) / (float)RAND_MAX;
+		return min + ranf * (max - min);
     }
 private:
     unsigned long int seed;
