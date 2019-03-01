@@ -7,9 +7,10 @@
 
 #include "MeshObject.h"
 #include "LambertMaterial.h"
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 
 #include <string>
+#include <unordered_map>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -19,13 +20,19 @@ MeshObject::MeshObject() {
     
     Vertexes=0;
     Triangles=0;
+
+	auto material = new LambertMaterial;
+	material->SetColor(Color(0.5f, 0.5f, 0.5f));
+	mtl = material;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 MeshObject::~MeshObject() {
-    delete []Vertexes;
-    delete []Triangles;
+	if (Vertices.empty())
+		delete[]Vertexes;
+	if (Triangles_.empty())
+		delete[]Triangles;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,7 +60,6 @@ void MeshObject::PrintObj()
         SHOWVEC(Triangles[i].GetVtx(2)->Position);
         SHOWVEC(Triangles[i].Normal);
     }
-    
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +70,8 @@ void MeshObject::MakeBox(float x,float y,float z,Material *mtl) {
     NumTriangles=12;
     Vertexes=new Vertex[NumVertexes];
     Triangles=new Triangle[NumTriangles];
-//    if(mtl==0) mtl=new LambertMaterial;
+    if(mtl==nullptr) 
+		mtl=new LambertMaterial;
     
     x*=0.5f;
     y*=0.5f;
@@ -138,9 +145,6 @@ void MeshObject::MakeBox(float x,float y,float z,Material *mtl) {
     Vertexes[23].Set(p110,-zAxis,t01);
     Triangles[10].Init(&Vertexes[20],&Vertexes[21],&Vertexes[22],mtl);
     Triangles[11].Init(&Vertexes[20],&Vertexes[22],&Vertexes[23],mtl);
-
-//    for (int i = 0 ; i < NumTriangles; i++)
-//        SHOWVEC(Triangles[i].GetCenter());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,8 +166,8 @@ bool MeshObject::LoadOFF(const char *filename, Material *mtl)
     
     char * pch;
     
-    unsigned int numVerts = 0;
-    unsigned int numFaces = 0;
+    size_t numVerts = 0;
+    size_t numFaces = 0;
     
     vector<vec3> normals;
     vector<int> indices;
@@ -192,9 +196,6 @@ bool MeshObject::LoadOFF(const char *filename, Material *mtl)
         normals.resize(numVerts);
         indices.resize(3*numFaces);
     }
-    
-    Vertexes = new Vertex[numVerts];
-    Triangles = new Triangle[numFaces];
     
     for(unsigned int i = 0; i < numVerts; i++)
     {
@@ -226,7 +227,7 @@ bool MeshObject::LoadOFF(const char *filename, Material *mtl)
     
     std::vector<glm::vec3> tempNorms(numFaces, glm::vec3(0));
     
-    for (int i = 0; i < numVerts; i++)
+    for (size_t i = 0; i < numVerts; i++)
         normals[i] = vec3(0);
     
     for (unsigned int i = 0; i < indices.size(); i+=3)
@@ -274,6 +275,154 @@ bool MeshObject::LoadOFF(const char *filename, Material *mtl)
     
     return true;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool MeshObject::LoadOBJ(const char * filename, Material * mtl)
+{
+	std::ifstream file(filename);
+	std::string str;
+
+	char * pch;
+
+	std::vector<size_t> indices;
+
+	bool oneBasedIndices = true;
+
+	while (getline(file, str))
+	{
+		if (str.empty())
+			continue;
+		else if (str.front() == 'v')
+		{
+			std::vector<char> cstr(str.c_str() + 1, str.c_str() + str.size() + 1);
+			pch = strtok(&cstr[0], " \t");
+
+			Vertices.emplace_back();
+			Vertices.back().Position.x = (float)atof(pch);
+			pch = strtok(NULL, " ");
+			Vertices.back().Position.y = (float)atof(pch);
+			pch = strtok(NULL, " ");
+			Vertices.back().Position.z = (float)atof(pch);
+		}
+		else if (str.front() == 'n')
+		{
+			// Read Normal
+			// TODO : Implement
+		}
+		else if (str.front() == 'f')
+		{
+			std::vector<char> cstr(str.c_str() + 1, str.c_str() + str.size() + 1);
+			pch = strtok(&cstr[0], " \t");
+
+			indices.emplace_back(atoi(pch));
+			if (oneBasedIndices)
+				indices.back()--;
+			pch = strtok(NULL, " ");
+			indices.emplace_back(atoi(pch));
+			if (oneBasedIndices)
+				indices.back()--;
+			pch = strtok(NULL, " ");
+			indices.emplace_back(atoi(pch));
+			if (oneBasedIndices)
+				indices.back()--;
+		}
+	}
+
+	if (mtl == nullptr) 
+		mtl = new LambertMaterial;
+
+	bool shareVertices = false;
+	if (shareVertices)
+	{
+		Triangles_.resize(indices.size() / 3);
+
+		for (unsigned int i = 0; i < indices.size(); i += 3)
+			Triangles_[i / 3].Init(&Vertices[indices[i]], &Vertices[indices[i + 1]], &Vertices[indices[i + 2]], mtl);
+
+		// Set vertex normals as average of triangle normals
+		std::unordered_map<Vertex*, int> vertexNumTriangles;
+
+		for (const auto & triangle : Triangles_)
+		{
+			for (const auto & vert : triangle.GetVertices())
+			{
+				vertexNumTriangles[vert]++;
+				vert->Normal += triangle.Normal;
+			}
+		}
+
+		for (auto iter : vertexNumTriangles)
+			iter.first->Normal /= (float)iter.second;
+	}
+	else
+	{
+		class IndexWrapper
+		{
+		public:
+
+			size_t GetAndIncrement()
+			{
+				CurrentIndex++;
+				return Indices[CurrentIndex - 1];
+			}
+
+			size_t CurrentIndex = 0;
+			std::vector<size_t> Indices;
+		};
+
+		// Find how many copies of each vertex we need
+		std::unordered_map<size_t, size_t> vertexIndexToCounter;
+		std::vector<IndexWrapper> indexWrappers(Vertices.size());
+
+		for (const auto & index : indices)
+		{
+			auto iter = vertexIndexToCounter.find(index);
+			if (iter == vertexIndexToCounter.end())
+			{
+				vertexIndexToCounter[index]++;
+				indexWrappers[index].Indices.push_back(index);
+				continue;
+			}
+			else
+			{
+				auto copiedVertex = Vertex(Vertices[index]);
+				Vertices.push_back(copiedVertex);
+				indexWrappers[index].Indices.push_back(Vertices.size() - 1);
+			}
+		}
+
+		Triangles_.resize(indices.size() / 3);
+
+		for (unsigned int i = 0; i < indices.size(); i += 3)
+		{
+			auto v1i = indexWrappers[indices[i]].GetAndIncrement();
+			auto v2i = indexWrappers[indices[i + 1]].GetAndIncrement();
+			auto v3i = indexWrappers[indices[i + 2]].GetAndIncrement();
+
+			Triangles_[i / 3].Init(&Vertices[v1i], &Vertices[v2i], &Vertices[v3i], mtl);
+
+			Vertices[v1i].Normal = Triangles_[i / 3].Normal;
+			Vertices[v2i].Normal = Triangles_[i / 3].Normal;
+			Vertices[v3i].Normal = Triangles_[i / 3].Normal;
+		}
+	}
+
+
+	NumVertexes = Vertices.size();
+	NumTriangles = Triangles_.size();
+
+	Vertexes = Vertices.data();
+	Triangles = Triangles_.data();
+
+	std::cout << "Finished reading " << filename << std::endl;
+	std::cout << "Number of Vertices: " << Vertices.size() << std::endl;
+	std::cout << "Number of Faces: " << Triangles_.size() << std::endl;
+
+	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 bool MeshObject::LoadPLY(const char *filename,Material *mtl) {
     // Open file
@@ -372,6 +521,7 @@ bool MeshObject::LoadPLY(const char *filename,Material *mtl) {
     return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 
 void MeshObject::Smooth() {
     int i,j;
@@ -392,3 +542,5 @@ void MeshObject::Smooth() {
     }
 
 }
+
+////////////////////////////////////////////////////////////////////////////////

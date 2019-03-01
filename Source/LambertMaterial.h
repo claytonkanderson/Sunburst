@@ -12,7 +12,10 @@ class LambertMaterial : public Material
 {
 public:
 
-    LambertMaterial() {randomGenerator = new RandomGen(); }
+    LambertMaterial() {
+		SetColor(Color(0.66f, 0.66f, 0.66f));
+		randomGenerator = new RandomGen(); 
+	}
     
     void ComputeReflectance(Color &col, const glm::vec3 &lightDir, const glm::vec3 &out, const Intersection &hit) {
         col.Multiply(DiffuseColor);

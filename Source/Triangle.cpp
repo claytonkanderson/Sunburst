@@ -111,15 +111,15 @@ bool Triangle::Intersect(const Ray &ray, Intersection &hit) const
     float hitDist = t;
     
     // Ignore hits that are too close
-    if (hitDist < 0.001) return false;
+    if (hitDist < ep) return false;
     
     // Only accept if the new hit is closer than the previous hit
     if (hitDist < hit.HitDistance)
     {
         hit.Normal = normalize((1 - alpha - beta) * Vtx[0]->Normal + alpha * Vtx[1]->Normal + beta * Vtx[2]->Normal);
         if (dot(hit.Normal, d) > 0) hit.Normal *= -1.0f;
-//        if (hit.Normal.y < 0) hit.Normal *= -1.0f;
-        hit.Mtl = Mtl;
+        
+		hit.Mtl = Mtl;
         hit.Position = hitPos;
         hit.HitDistance = hitDist;
         

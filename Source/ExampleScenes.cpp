@@ -1,5 +1,5 @@
 //
-//  previousAssignments.cpp
+//  ExampleScenes.cpp
 //  CSE_168
 //
 //  Created by Clayton Anderson on 4/23/17.
@@ -7,7 +7,7 @@
 //
 #define GLM_ENABLE_EXPERIMENTAL
 
-#include "previousAssignments.h"
+#include "ExampleScenes.h"
 
 void project4() {
     // Create scene
@@ -91,6 +91,81 @@ void project4() {
 	cam.RenderMultiThread(scn, 8);
     cam.SaveBitmap("project4.bmp");
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+void RenderObj()
+{
+	Scene scn;
+	scn.SetSkyColor(Color(0.8f, 0.8f, 1.0f));
+
+	AshikhminMaterial gold;
+	gold.SetDiffuseLevel(0.0f);
+	gold.SetSpecularLevel(1.0f);
+	gold.SetSpecularColor(Color(0.95f, 0.7f, 0.3f));
+	gold.SetRoughness(1.0f, 1000.0f);
+
+	// Create ground
+	MeshObject ground;
+	ground.MakeBox(25.0f, 0.1f, 25.0f);
+	scn.AddObject(ground);
+
+	MeshObject obj;
+	obj.LoadOBJ("../../Models/dragon.obj");
+	BoxTreeObject tree;
+
+	high_resolution_clock::time_point t1 = high_resolution_clock::now();
+	tree.Construct(obj);
+	high_resolution_clock::time_point t2 = high_resolution_clock::now();
+	duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+	std::cout << "Tree Construction: " << time_span.count() << " seconds." << std::endl;
+
+	InstanceObject inst(&tree);
+	glm::mat4x4 mtx = glm::eulerAngleY(-0.5*3.141593f);
+	mtx[3] = glm::vec4(-0.05f, 0.0f, -0.1f, 1.0f);
+	inst.SetMatrix(mtx);
+	inst.SetMaterial(&gold);
+	scn.AddObject(inst);
+
+	// Create lights
+	DirectLight sunlgt;
+	sunlgt.SetBaseColor(Color(1.0f, 1.0f, 0.9f));
+	sunlgt.SetIntensity(1.0f);
+	sunlgt.SetDirection(glm::vec3(2.0f, -3.0f, 2.0f));
+	scn.AddLight(sunlgt);
+
+	DirectLight redlgt;
+	redlgt.SetBaseColor(Color(1.0f, 0.2f, 0.2f));
+	redlgt.SetIntensity(0.02f);
+	redlgt.SetDirection(glm::vec3(-0.2f, 0.2f, 0.2f));
+	scn.AddLight(redlgt);
+	
+	DirectLight bluelgt;
+	bluelgt.SetBaseColor(Color(0.2f, 0.2f, 1.0f));
+	bluelgt.SetIntensity(0.02f);
+	bluelgt.SetDirection(glm::vec3(0.1f, 0.1f, 0.3f));
+	scn.AddLight(bluelgt);
+
+	// Create camera
+	Camera cam;
+	//cam.LookAt(glm::vec3(-0.1f, 2.1f, -6.2f), glm::vec3(-0.05f, 0.52f, 0.0f), glm::vec3(0, 1.0f, 0));
+	cam.LookAt(glm::vec3(-0.5f, 0.25f, -0.3f), glm::vec3(0.1f, 0.10f, 0.0f), glm::vec3(0, 1.0f, 0));
+	cam.SetFOV(40.0f);
+	cam.SetAspect(1.33f);
+	cam.SetResolution(1600, 1200);
+	cam.SetSuperSample(12, 12);
+
+	// Render image
+	t1 = high_resolution_clock::now();
+	cam.RenderMultiThread(scn, 8);
+	t2 = high_resolution_clock::now();
+	time_span = duration_cast<duration<double>>(t2 - t1);
+
+	std::cout << "Render Time: " << time_span.count() << " seconds." << std::endl;
+	cam.SaveBitmap("ObjTest.bmp");
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 void project3() {
     // Create scene

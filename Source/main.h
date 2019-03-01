@@ -21,7 +21,7 @@
 #include "SphereObject.hpp"
 #include "ImplicitSurface.hpp"
 #include "glm/gtc/random.hpp"
-#include "previousAssignments.h"
+#include "ExampleScenes.h"
 #include "BoxTreeObject.hpp"
 #include "BoxTreeNode.hpp"
 #include "MetalMaterial.h"

@@ -9,6 +9,7 @@
 #include "Ray.h"
 #include <iostream>
 #include <glm/gtx/norm.hpp>
+#include <array>
 #define SHOWVEC(v) std::cout << #v << ": " << v.x << " " << v.y << " " << v.z << std::endl
 
 
@@ -26,15 +27,17 @@ public:
     float GetMaxCoord(int i);
     vec3 GetCenter() {return 0.33333f * (Vtx[0]->Position + Vtx[1]->Position + Vtx[2]->Position); }
     Vertex * GetVtx(int index) {return Vtx[index];}
+	const std::array<Vertex*, 3> GetVertices() const { return Vtx; }
     vec3 Normal;
     
     void UpdateNormal();
     void SetMaterial(Material * material) {Mtl = material;}
     
 private:
-	Vertex *Vtx[3];    
-	Material *Mtl;
-    float ep = 0.00001f;
+	//Vertex *Vtx[3] = nullptr;
+	std::array<Vertex*, 3> Vtx;
+	Material *Mtl = nullptr;
+    float ep = 0.001f;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
